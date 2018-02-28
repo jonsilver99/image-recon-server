@@ -54,6 +54,9 @@ class FileHandler {
                     reject(err)
                 }
                 else {
+                    fileNames = fileNames.filter((name)=>{
+                        return name != '.keep';
+                    })
                     resolve(fileNames);
                 }
             });
