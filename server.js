@@ -21,23 +21,6 @@ server.use(expressFileUpload());
 // static files fetching
 server.use('/assets/uploads', express.static(__dirname + "/public/uploads"))
 
-
-
-//*************************************//
-// Deploy testing routes
-// server.use("/", (req, res, next) => {
-//     const fileHandler = require('./handlers/fileHandler');
-//     fileHandler.getAllDirFiles()
-//         .then((response) => {
-//             res.status(200).send(response);
-//         }).catch(err => {
-//             res.status(500).send(err)
-//         })
-// });
-//*************************************//
-
-
-
 // Routing
 server.use("/register", authModule.register);
 server.use("/login", authModule.login);
