@@ -1,66 +1,42 @@
 const fs = require('fs');
-// const authModule = require('../controllers/authModule');
+// AWS
+const AWS = require('../external-services/aws-service');
 let likesMap = require('../data/pic-likes-map.json');
 let existingUsers = require('../data/users.json');
+let existingPics = require('../data/picnames.json');
 
 class FileHandler {
 
-    // save all uploaded images
-    static saveAllFiles(savePath, uploads) {
-        if (!uploads) {
-            throw ('no files uploaded');
+    // save the names of the image files uploaded to s3, in the data/picnames.json file
+    static saveAllFiles(fileNames) {
+        if (!fileNames) {
+            throw ('no file names recieved');
         }
-
-        if (!Array.isArray(uploads)) {
-            uploads = [uploads];
+        if (!Array.isArray(fileNames)) {
+            fileNames = [fileNames];
         }
-
-        function saveOne(file) {
-            return new Promise((resolve, reject) => {
-                file.mv(`${savePath}/${file.name}`, (err) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(file.name);
-                    }
-                })
-            })
+        for (let i = 0; i < fileNames.length; i++) {
+            // if picname already exists in array dont save it again
+            if (!existingPics.includes(fileNames[i])) {
+                existingPics.push(fileNames[i])
+            }
         }
-
-        return Promise.all(uploads.map((file) => {
-            return saveOne(file)
-        }))
-            .then((savedFilesNames) => {
+        return this.updateJsonFile('picnames', existingPics)
+            .then((result) => {
+                console.log(result);
                 // save an object entry ({'picname': # of likes}) in the 'likes-map.json' file. this entry will store the picture's likes
-                savedFilesNames.forEach((filename) => {
+                fileNames.forEach((filename) => {
                     likesMap[filename] = 0;
                 });
                 return this.updateJsonFile('pic-likes-map', likesMap);
             })
-            .then((updateStatus) => {
-                console.log(updateStatus);
+            .then((result) => {
+                console.log(result);
                 return "Upload process successful, Files saved, likes map updated";
             })
             .catch(err => {
                 throw (err);
             })
-    }
-
-    // get all uploaded images's names
-    static getAllDirFiles() {
-        return new Promise((resolve, reject) => {
-            fs.readdir("public/uploads", (err, fileNames) => {
-                if (err) {
-                    reject(err)
-                }
-                else {
-                    fileNames = fileNames.filter((name)=>{
-                        return name != '.keep';
-                    })
-                    resolve(fileNames);
-                }
-            });
-        });
     }
 
     // Update a json data file
@@ -110,5 +86,4 @@ class FileHandler {
         }.bind(this))();
     }
 }
-
 module.exports = FileHandler;

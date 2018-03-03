@@ -1,12 +1,13 @@
 const express = require('express');
 const fileRouter = express.Router();
 const fileHandler = require('../handlers/fileHandler');
-const clarifai = require('../handlers/clarifai');
+const clarifai = require('../external-services/clarifai');
+const AWSHnadler = require('../external-services/aws-service');
 const http = require('http');
 
 fileRouter.post("/upload", (req, res) => {
-
-    fileHandler.saveAllFiles('public/uploads', req.files.uploads)
+    // get all pic url's from s3 bucket
+    fileHandler.saveAllFiles(req.body.uploaded_files_names)
         .then((results) => {
             console.log(results);
             res.status(200).send(results);
@@ -17,6 +18,7 @@ fileRouter.post("/upload", (req, res) => {
 })
 
 fileRouter.post("/like", (req, res) => {
+    // add picture name to logged in user's likes array
     let userToken = req.headers.authorization;
     let pictureLiked = req.body.pic;
     fileHandler.handleNewPictureLike(userToken, pictureLiked)
@@ -30,23 +32,26 @@ fileRouter.post("/like", (req, res) => {
 })
 
 fileRouter.get("/getAllPics", (req, res) => {
-    fileHandler.getAllDirFiles()
-        .then((response) => {
-            res.status(200).json(response);
+    // get all pic url's from s3 bucket
+    AWSHnadler.getAllPictures()
+        .then((results) => {
+            res.status(200).json(results);
         }).catch(err => {
             res.status(500).send(err)
         })
 })
 
 fileRouter.get("/recon/:picName", (req, res) => {
-    let picPath = `public/uploads/${req.params.picName}`;
-    return clarifai.reconPic(picPath)
+    // download the picture object from s3 bucket, then send the pic's binary data to clarifai recon
+    return AWSHnadler.downloadPictureObject(req.params.picName)
+        .then(picObj => {
+            return clarifai.reconPic(picObj.Body)
+        })
         .then(tags => {
-            console.log(tags);
             return res.status(200).json(tags);
         })
-
         .catch(err => {
+            console.log(err);
             return res.status(err.status).send('Calrifai error or denial of service');
         })
 })

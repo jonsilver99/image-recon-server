@@ -4,13 +4,15 @@ const permissions = {
         'Tiles', /*Gallery/Tiles*/ 
         'Carousel', /*Gallery/Carousel*/
         'FullPic/:name',
+        'FullPic/:name/:url',
         'Upload'
     ],
     user: [
         'Gallery',
         'Tiles', /*Gallery/Tiles*/ 
         'Carousel', /*Gallery/Carousel*/
-        'FullPic/:name'
+        'FullPic/:name',
+        'FullPic/:name/:url'
     ]
 }
 

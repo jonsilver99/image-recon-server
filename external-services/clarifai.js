@@ -6,11 +6,9 @@ const clarifai = new Clarifai.App({
 });
 
 module.exports = {
-    reconPic: (picPath) => {
+    reconPic: (picObject) => {
         // get picture binary data
-        let binaryData = fs.readFileSync(picPath);
-        // get picture binary data
-        let base64Pic = new Buffer(binaryData).toString('base64');
+        let base64Pic = new Buffer(picObject).toString('base64');
 
         return new Promise((resolve, reject) => {
             clarifai.models.predict(Clarifai.GENERAL_MODEL, { base64: base64Pic })
@@ -18,7 +16,9 @@ module.exports = {
                     resolve(response.outputs[0].data.concepts)
                     // res.json(response.outputs[0].data.concepts);
                 })
-                .catch(err => reject(err));
+                .catch(err => {
+                    reject(err)
+                });
         })
     }
 }

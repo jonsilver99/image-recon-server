@@ -1,3 +1,5 @@
+#03/03/2018 - reconfiged to integrate aws s3 service to resolve, serve and upload/store static files
+
 ****************
 Running this app
 ****************

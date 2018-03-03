@@ -11,6 +11,7 @@
     "author": "john silver",
     "license": "ISC",
     "dependencies": {
+        "aws-sdk": "^2.204.0",
         "body-parser": "^1.18.2",
         "clarifai": "^2.6.0",
         "express": "^4.16.2",

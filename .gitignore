@@ -1,3 +1,5 @@
 node_modules/
 controllers/unused/
 .vscode/
+public/
+env/dev_vars.js
