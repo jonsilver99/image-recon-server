@@ -7,14 +7,70 @@ let existingPics = require('../data/picnames.json');
 
 class FileHandler {
 
-    // save the names of the image files uploaded to s3, in the data/picnames.json file
-    static saveAllFiles(fileNames) {
+    static processUploadedFiles(files) {
+
+        if (!files) {
+            return Promise.reject('no file recieved');
+        }
+        if (!Array.isArray(files)) {
+            files = [files];
+        }
+
+        // validate upload contents
+        let payloadStatus = this.validatePayload(files);
+        if (payloadStatus.isValid === false) {
+            return Promise.reject(payloadStatus.message);
+        }
+
+        // 1 Upload all files to s3 bucket
+        return Promise.all(files.map(file => {
+            return AWS.uploadFileToS3Bucket(file)
+        }))
+            .then((uploaded) => {
+                return this.saveNewFilesInfo(uploaded.map((file) => {
+                    return file.Key;
+                }))
+            })
+            .catch(err => {
+                throw (err);
+            })
+    }
+
+    static validatePayload(files) {
+        let payloadStatus = {
+            isValid: null,
+            message: null
+        }
+        let totalSize = 0;
+        try {
+            for (let i = 0; i < files.length; i++) {
+                if (!files[i].mimetype.includes('image', 0)) {
+                    throw 'Unsupported file type in payload. upload process aborted'
+                }
+                totalSize += files[i].data.byteLength;
+            }
+            if (totalSize / 1000000 >= 5) {
+                throw "Max Payload size Exceeded. Try Uploading less files";
+            }
+            return payloadStatus.isValid = true;
+        }
+        catch (errMsg) {
+            payloadStatus.isValid = false;
+            payloadStatus.message = errMsg;
+            return payloadStatus;
+        }
+    }
+
+    static saveNewFilesInfo(fileNames) {
+
         if (!fileNames) {
             throw ('no file names recieved');
         }
         if (!Array.isArray(fileNames)) {
             fileNames = [fileNames];
         }
+
+        // 2 save uploaded files names in the picnames.json
         for (let i = 0; i < fileNames.length; i++) {
             // if picname already exists in array dont save it again
             if (!existingPics.includes(fileNames[i])) {
@@ -24,15 +80,15 @@ class FileHandler {
         return this.updateJsonFile('picnames', existingPics)
             .then((result) => {
                 console.log(result);
-                // save an object entry ({'picname': # of likes}) in the 'likes-map.json' file. this entry will store the picture's likes
                 fileNames.forEach((filename) => {
                     likesMap[filename] = 0;
                 });
+                // 3 save an entry for each picture file in the pic-likes-map.json. this entry will count the picture's likes
                 return this.updateJsonFile('pic-likes-map', likesMap);
             })
             .then((result) => {
                 console.log(result);
-                return "Upload process successful, Files saved, likes map updated";
+                return "Upload process successful, Files info saved, likes map updated";
             })
             .catch(err => {
                 throw (err);

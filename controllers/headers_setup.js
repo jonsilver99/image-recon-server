@@ -3,8 +3,8 @@ module.exports = (req, res, next) => {
     res.header({
         
         // Client allowed to connect
-        'Access-Control-Allow-Origin': 'https://image-recon-app.herokuapp.com',
-        // 'Access-Control-Allow-Origin': '*',
+        // 'Access-Control-Allow-Origin': 'https://image-recon-app.herokuapp.com',
+        'Access-Control-Allow-Origin': '*',
         // 'Access-Control-Allow-Origin': 'http://localhost:4200',
         
         // Request methods you wish to allow

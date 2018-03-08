@@ -6,14 +6,15 @@ const AWSHnadler = require('../external-services/aws-service');
 const http = require('http');
 
 fileRouter.post("/upload", (req, res) => {
-    // get all pic url's from s3 bucket
-    fileHandler.saveAllFiles(req.body.uploaded_files_names)
+    // save needed data about the file/s, freshly uploaded to S3
+    fileHandler.processUploadedFiles(req.files.upload_candidates)
         .then((results) => {
             console.log(results);
             res.status(200).send(results);
         })
         .catch(err => {
-            res.status(500).send(err)
+            let errMsg = err.message || err;
+            res.status(500).send(errMsg);
         })
 })
 

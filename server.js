@@ -19,7 +19,12 @@ server.use(bodyParser.json())
 server.use(expressFileUpload());
 
 // static files fetching
-server.use('/assets/uploads', express.static(__dirname + "/public/uploads"))
+server.use('/assets/files', (req, res, next) => {
+    console.log('static asset request:', req.url);
+    next();
+},
+    express.static(__dirname + "/public/files")
+)
 
 // Routing
 server.use("/register", authModule.register);
