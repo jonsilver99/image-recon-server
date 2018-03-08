@@ -20,7 +20,7 @@ server.use(expressFileUpload());
 
 // static files fetching
 server.use((req, res, next) => {
-    console.log(req.path);
+    console.log('path', req.path);
     console.log('dirname:', __dirname);
     next();
 },
