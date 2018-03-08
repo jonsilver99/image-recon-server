@@ -21,7 +21,8 @@ server.use(expressFileUpload());
 // static files fetching
 server.use((req, res, next) => {
     console.log(req.path);
-    console.log(__dirname);
+    console.log('dirname:', __dirname);
+    next();
 },
     express.static(__dirname + "/public/files")
 );
