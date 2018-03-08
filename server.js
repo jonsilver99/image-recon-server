@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const expressFileUpload = require('express-fileupload');
 const authModule = require('./controllers/authModule');
 const fileRouter = require('./controllers/fileRouter');
+const path = require('path');
+
 
 // init express
 const server = express();
@@ -19,12 +21,7 @@ server.use(bodyParser.json())
 server.use(expressFileUpload());
 
 // static files fetching
-server.use((req, res, next) => {
-    console.log('path', req.path);
-    console.log('dirname:', __dirname);
-    next();
-},
-    express.static(__dirname + "/public/files")
+server.use(express.static(path.join(__dirname, "public", "files"))
 );
 
 // Routing
