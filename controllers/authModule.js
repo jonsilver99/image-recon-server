@@ -1,7 +1,19 @@
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const fileHandler = require('../handlers/fileHandler');
 const permissions = require('../constants/permissions');
 let existingUsers = require('../data/users.json');
+
+let jwtSecret = (() => {
+    if (process.env.JWT_SECRET) {
+        console.log('retrieved secret from env-vars ;)');
+        return process.env.JWT_SECRET;
+    } else if (fs.existsSync('env/dev_vars.js')) {
+        return require('../env/dev_vars').JWT_SECRET;
+    } else {
+        return null;
+    }
+})();
 
 const authModule = {
 
@@ -30,8 +42,7 @@ const authModule = {
             let matchedUser = authModule.searchUser(user);
             if (matchedUser) {
                 // Generate a token based on this user credentials, Set that token as auth header and send a detailed response back to client 
-                const authToken = jwt.sign(matchedUser, 'very-long-secret');
-                // const authToken = jwt.sign()
+                const authToken = jwt.sign(matchedUser, jwtSecret);
                 console.log(`Authorization header is ${authToken}`);
                 res.setHeader("Authorization", authToken)
                 // full response
@@ -81,7 +92,7 @@ const authModule = {
 
     validateToken: function (authToken) {
         return new Promise((resolve, reject) => {
-            jwt.verify(authToken, 'very-long-secret', function (err, decoded) {
+            jwt.verify(authToken, jwtSecret, function (err, decoded) {
                 if (err) {
                     console.log(err)
                     return reject({ validUser: false, msg: "Token validation process failed", errData: err });
