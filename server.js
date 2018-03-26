@@ -1,5 +1,5 @@
 const express = require('express');
-const headers_setup = require('./controllers/headers_setup');
+const cors_setup = require('./controllers/cors_setup');
 const bodyParser = require('body-parser');
 const expressFileUpload = require('express-fileupload');
 const authModule = require('./controllers/authModule');
@@ -10,8 +10,8 @@ const server = express();
 // port
 const PORT = process.env.PORT || 4400
 
-// headers definition middelware
-server.use(headers_setup);
+// Cors definition
+server.use(cors_setup);
 
 // parsers middleware
 server.use(bodyParser.urlencoded({ extended: false }))
