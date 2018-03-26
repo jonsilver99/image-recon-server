@@ -1,4 +1,5 @@
 const fs = require('fs');
+const inputValidator = require('./inputValidator');
 // AWS
 const AWS = require('../external-services/aws-service');
 let likesMap = require('../data/pic-likes-map.json');
@@ -17,7 +18,7 @@ class FileHandler {
         }
 
         // validate upload contents
-        let payloadStatus = this.validatePayload(files);
+        let payloadStatus = inputValidator.validatePayload(files);
         if (payloadStatus.isValid === false) {
             return Promise.reject(payloadStatus.message);
         }
@@ -36,30 +37,6 @@ class FileHandler {
             })
     }
 
-    static validatePayload(files) {
-        let payloadStatus = {
-            isValid: null,
-            message: null
-        }
-        let totalSize = 0;
-        try {
-            for (let i = 0; i < files.length; i++) {
-                if (!files[i].mimetype.includes('image', 0)) {
-                    throw 'Unsupported file type in payload. upload process aborted'
-                }
-                totalSize += files[i].data.byteLength;
-            }
-            if (totalSize / 1000000 >= 5) {
-                throw "Max Payload size Exceeded. Try Uploading less files";
-            }
-            return payloadStatus.isValid = true;
-        }
-        catch (errMsg) {
-            payloadStatus.isValid = false;
-            payloadStatus.message = errMsg;
-            return payloadStatus;
-        }
-    }
 
     static saveNewFilesInfo(fileNames) {
 
@@ -108,6 +85,7 @@ class FileHandler {
         });
     }
 
+    // When A user has 'liked a picture' (clicked the like button)
     static async handleNewPictureLike(userToken, picture) {
         const authModule = require('../controllers/authModule');
         let result = {

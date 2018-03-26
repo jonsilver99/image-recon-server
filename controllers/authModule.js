@@ -2,6 +2,7 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const fileHandler = require('../handlers/fileHandler');
 const permissions = require('../constants/permissions');
+const inputValidator = require('../handlers/inputValidator');
 let existingUsers = require('../data/users.json');
 
 let jwtSecret = (() => {
@@ -22,6 +23,12 @@ const authModule = {
         if (!user) {
             res.status(404).end("No registration data sent");
         } else {
+            // validate form input
+            let validation = inputValidator.processinput(user);
+            if (validation != "all input is valid") {
+                return res.status(400).send({ invalidInput: validation });
+            }
+
             user.liked_pictures = [];
             existingUsers.push(user);
             fileHandler.updateJsonFile('users', existingUsers)
@@ -39,6 +46,12 @@ const authModule = {
         if (!user) {
             res.status(404).end("No login data sent");
         } else {
+            // validate form input
+            let validation = inputValidator.processinput(user);
+            if (validation != "all input is valid") {
+                return res.status(400).send({ invalidInput: validation });
+            }
+
             let matchedUser = authModule.searchUser(user);
             if (matchedUser) {
                 // Generate a token based on this user credentials, Set that token as auth header and send a detailed response back to client 

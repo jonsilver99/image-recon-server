@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk');
+const path = require('path');
 const fs = require('fs');
 const zlib = require('zlib');
 const stream = require('stream');
@@ -25,11 +26,13 @@ module.exports = class awsHandler {
         if (!file) {
             return Promise.resolve('no file given')
         }
+        // Append filename with a unique suffix
+        let s3filename = this.addRandomSuffix(file.name);
         // Buffer the file data then upload it to S3
         let fileData = new Buffer(file.data);
         return new Promise((resolve, reject) => {
             const s3 = new AWS.S3({ params: { Bucket: BucketName } });
-            let uploadParams = { Bucket: BucketName, Key: file.name, Body: fileData };
+            let uploadParams = { Bucket: BucketName, Key: s3filename, Body: fileData };
             s3.upload(uploadParams, (err, data) => {
                 if (err) {
                     reject(err);
@@ -39,6 +42,20 @@ module.exports = class awsHandler {
                 }
             })
         })
+    }
+
+    static addRandomSuffix(filename) {
+        // save file extension
+        let extension = path.extname(filename);
+        // strip filename extension
+        let s3filename = filename.slice(0, filename.indexOf('.'))
+
+        let suffixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for (let i = 0; i < 5; i++) {
+            s3filename += suffixChars.charAt(Math.floor(Math.random() * suffixChars.length));
+        }
+        s3filename += extension;
+        return s3filename;
     }
 
     // get all uploaded images's names
